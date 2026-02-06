@@ -12,8 +12,7 @@ SQL Functions Used:
 ===============================================================================
 */
 
-/*Segment products into cost ranges and 
-count how many products fall into each segment*/
+--Segment products into cost ranges and count how many products fall into each segment
 WITH product_segments AS (
     SELECT
         product_key,
@@ -25,7 +24,7 @@ WITH product_segments AS (
             WHEN cost BETWEEN 500 AND 1000 THEN '500-1000'
             ELSE 'Above 1000'
         END AS cost_range
-    FROM gold.dim_products
+    FROM dim_products
 )
 SELECT 
     cost_range,
@@ -34,9 +33,10 @@ FROM product_segments
 GROUP BY cost_range
 ORDER BY total_products DESC;
 
-/*Group customers into three segments based on their spending behavior:
-	- VIP: Customers with at least 12 months of history and spending more than €5,000.
-	- Regular: Customers with at least 12 months of history but spending €5,000 or less.
+/* 
+Group customers into three segments based on their spending behavior:
+	- VIP: Customers with at least 12 months of history and spending more than $5,000.
+	- Regular: Customers with at least 12 months of history but spending $5,000 or less.
 	- New: Customers with a lifespan less than 12 months.
 And find the total number of customers by each group
 */
@@ -47,8 +47,8 @@ WITH customer_spending AS (
         MIN(order_date) AS first_order,
         MAX(order_date) AS last_order,
         DATEDIFF(month, MIN(order_date), MAX(order_date)) AS lifespan
-    FROM gold.fact_sales f
-    LEFT JOIN gold.dim_customers c
+    FROM fact_sales f
+    LEFT JOIN dim_customers c
         ON f.customer_key = c.customer_key
     GROUP BY c.customer_key
 )
@@ -66,4 +66,5 @@ FROM (
     FROM customer_spending
 ) AS segmented_customers
 GROUP BY customer_segment
+
 ORDER BY total_customers DESC;
