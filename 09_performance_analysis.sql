@@ -1,4 +1,4 @@
-/*
+/* 
 ===============================================================================
 Performance Analysis (Year-over-Year, Month-over-Month)
 ===============================================================================
@@ -13,16 +13,15 @@ SQL Functions Used:
     - CASE: Defines conditional logic for trend analysis.
 ===============================================================================
 */
-
-/* Analyze the yearly performance of products by comparing their sales 
-to both the average sales performance of the product and the previous year's sales */
+--Analyze the yearly performance of products by comparing their sales 
+--to both the average sales performance of the product and the previous year's sales
 WITH yearly_product_sales AS (
     SELECT
         YEAR(f.order_date) AS order_year,
         p.product_name,
         SUM(f.sales_amount) AS current_sales
-    FROM gold.fact_sales f
-    LEFT JOIN gold.dim_products p
+    FROM fact_sales f
+    LEFT JOIN dim_products p
         ON f.product_key = p.product_key
     WHERE f.order_date IS NOT NULL
     GROUP BY 
@@ -40,6 +39,7 @@ SELECT
         WHEN current_sales - AVG(current_sales) OVER (PARTITION BY product_name) < 0 THEN 'Below Avg'
         ELSE 'Avg'
     END AS avg_change,
+    
     -- Year-over-Year Analysis
     LAG(current_sales) OVER (PARTITION BY product_name ORDER BY order_year) AS py_sales,
     current_sales - LAG(current_sales) OVER (PARTITION BY product_name ORDER BY order_year) AS diff_py,
@@ -50,3 +50,4 @@ SELECT
     END AS py_change
 FROM yearly_product_sales
 ORDER BY product_name, order_year;
+
